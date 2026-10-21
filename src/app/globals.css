@@ -1,0 +1,456 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+/*
+  Design tokens — "Workshop schematic" system
+  ------------------------------------------------------------
+  Light: engineering grid paper + schematic ink.
+  Dark : solder-mask navy + copper.
+  Category colours follow the electrical vocabulary students meet in the
+  course (safety-sign yellow, resistor colour-code hues, copper traces).
+  Every colour used in UI or SVG figures must come from these tokens so
+  light/dark themes stay consistent.
+*/
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --paper: #f6f8fb;          /* page background (grid paper) */
+  --paper-grid: #e3e9f2;     /* grid lines on paper */
+  --panel: #ffffff;          /* raised surfaces */
+  --panel-2: #eef2f8;        /* inset / secondary surfaces */
+  --line: #d3dbe7;           /* borders */
+  --line-strong: #a9b6c9;
+
+  /* Ink */
+  --ink: #14213d;            /* schematic ink — primary text */
+  --ink-2: #3c4a66;          /* secondary text */
+  --ink-3: #66748f;          /* tertiary / captions (AA on panel at ≥17px) */
+
+  /* Brand */
+  --cobalt: #2457f5;         /* primary action */
+  --cobalt-ink: #1a3fb8;     /* primary hover / text on light */
+  --cobalt-soft: #e4ebff;
+  --copper: #b8641f;         /* PCB trace accent */
+  --copper-soft: #f8e9dc;
+  --signal: #f5b700;         /* safety-sign yellow */
+  --signal-soft: #fff4cc;
+
+  /* Feedback */
+  --ok: #138a43;
+  --ok-soft: #e1f5e9;
+  --warn: #b26a00;
+  --warn-soft: #fff1d6;
+  --danger: #c62828;
+  --danger-soft: #fde6e6;
+  --info: #1f6fb2;
+  --info-soft: #e3f0fb;
+
+  /* Week categories (see src/content/course.ts) */
+  --cat-safety: #d99a00;
+  --cat-circuits: #2457f5;
+  --cat-protection: #e0601a;
+  --cat-passive: #13924a;
+  --cat-magnetic: #7347d6;
+  --cat-semiconductor: #0b8fa0;
+  --cat-assembly: #b8641f;
+  --cat-motor: #d63a4a;
+  --cat-instrument: #c2367f;
+
+  /* Figure palette (SVG figures use ONLY these) */
+  --fig-bg: #ffffff;
+  --fig-panel: #f1f5fb;
+  --fig-ink: #14213d;
+  --fig-muted: #66748f;
+  --fig-grid: #dde4ef;
+  --fig-accent: #2457f5;
+  --fig-accent-soft: #dbe5ff;
+  --fig-accent-2: #7347d6;
+  --fig-ok: #138a43;
+  --fig-warn: #d99a00;
+  --fig-danger: #c62828;
+  --fig-danger-soft: #fde2e2;
+  --fig-current: #e0601a;     /* conventional-current arrows / flow dots */
+  --fig-electron: #0b8fa0;    /* electron-flow (only where explicitly shown) */
+  --fig-copper: #b8641f;
+  --fig-copper-soft: #f3dcc7;
+  --fig-wire-l: #8b4513;      /* Line — brown (มอก. 11-2553) */
+  --fig-wire-n: #1e88e5;      /* Neutral — blue */
+  --fig-wire-pe-g: #2e7d32;   /* Protective earth — green */
+  --fig-wire-pe-y: #fdd835;   /*                    yellow stripe */
+  --fig-wire-l2: #222222;     /* L2 black */
+  --fig-wire-l3: #8a8f98;     /* L3 grey */
+  --fig-plus: #c62828;        /* DC + */
+  --fig-minus: #14213d;       /* DC − */
+  --fig-glow: #ffd54a;        /* lamp / LED glow */
+  --fig-field: #7347d6;       /* magnetic field lines */
+  --fig-skin: #f2c9a0;        /* people in safety figures */
+
+  /* Type */
+  --font-sans: "IBM Plex Sans Thai", "Noto Sans Thai Variable", "Noto Sans Thai", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Radius scale — hierarchy, not one radius everywhere */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --shadow-1: 0 1px 0 rgba(20, 33, 61, 0.06), 0 1px 3px rgba(20, 33, 61, 0.08);
+  --shadow-2: 0 2px 0 rgba(20, 33, 61, 0.05), 0 8px 24px -8px rgba(20, 33, 61, 0.22);
+  --focus: 0 0 0 3px #ffffff, 0 0 0 6px #2457f5;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #0d1822;
+  --paper-grid: #16283a;
+  --panel: #13222f;
+  --panel-2: #192c3c;
+  --line: #24394c;
+  --line-strong: #3a5368;
+
+  --ink: #e8eef6;
+  --ink-2: #b9c6d6;
+  --ink-3: #8fa1b6;
+
+  --cobalt: #6f93ff;
+  --cobalt-ink: #9db5ff;
+  --cobalt-soft: #1c2c55;
+  --copper: #e39a5b;
+  --copper-soft: #3a2614;
+  --signal: #ffcc33;
+  --signal-soft: #3a3010;
+
+  --ok: #46c27a;
+  --ok-soft: #12321f;
+  --warn: #f0b04a;
+  --warn-soft: #3a2a0c;
+  --danger: #ff7470;
+  --danger-soft: #3d1717;
+  --info: #67b0ef;
+  --info-soft: #11283d;
+
+  --cat-safety: #ffc933;
+  --cat-circuits: #7a9bff;
+  --cat-protection: #ff8a4c;
+  --cat-passive: #47c67c;
+  --cat-magnetic: #a585ff;
+  --cat-semiconductor: #3cc4d4;
+  --cat-assembly: #e39a5b;
+  --cat-motor: #ff6b78;
+  --cat-instrument: #f06bb0;
+
+  --fig-bg: #13222f;
+  --fig-panel: #192c3c;
+  --fig-ink: #e8eef6;
+  --fig-muted: #9fb0c3;
+  --fig-grid: #23394c;
+  --fig-accent: #7a9bff;
+  --fig-accent-soft: #1f3263;
+  --fig-accent-2: #a585ff;
+  --fig-ok: #46c27a;
+  --fig-warn: #ffc933;
+  --fig-danger: #ff7470;
+  --fig-danger-soft: #4a1c1c;
+  --fig-current: #ff8a4c;
+  --fig-electron: #3cc4d4;
+  --fig-copper: #e39a5b;
+  --fig-copper-soft: #4a3020;
+  --fig-wire-l: #c27a45;
+  --fig-wire-n: #5aaaf0;
+  --fig-wire-pe-g: #4caf50;
+  --fig-wire-pe-y: #fdd835;
+  --fig-wire-l2: #c9ced6;
+  --fig-wire-l3: #8a95a5;
+  --fig-plus: #ff7470;
+  --fig-minus: #c9d4e2;
+  --fig-glow: #ffd54a;
+  --fig-field: #a585ff;
+  --fig-skin: #d9a77c;
+
+  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 0 rgba(0, 0, 0, 0.25), 0 10px 28px -8px rgba(0, 0, 0, 0.6);
+  --focus: 0 0 0 3px #0d1822, 0 0 0 6px #7a9bff;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-grid: var(--paper-grid);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-cobalt: var(--cobalt);
+  --color-cobalt-ink: var(--cobalt-ink);
+  --color-cobalt-soft: var(--cobalt-soft);
+  --color-copper: var(--copper);
+  --color-copper-soft: var(--copper-soft);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-cat-safety: var(--cat-safety);
+  --color-cat-circuits: var(--cat-circuits);
+  --color-cat-protection: var(--cat-protection);
+  --color-cat-passive: var(--cat-passive);
+  --color-cat-magnetic: var(--cat-magnetic);
+  --color-cat-semiconductor: var(--cat-semiconductor);
+  --color-cat-assembly: var(--cat-assembly);
+  --color-cat-motor: var(--cat-motor);
+  --color-cat-instrument: var(--cat-instrument);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+}
+
+html {
+  font-size: 17px;
+  -webkit-text-size-adjust: 100%;
+}
+@media (min-width: 768px) {
+  html { font-size: 18px; }
+}
+
+body {
+  background-color: var(--paper);
+  /* engineering grid paper: 24px minor grid */
+  background-image:
+    linear-gradient(var(--paper-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.75; /* Thai script needs generous leading */
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--r-sm);
+}
+
+::selection { background: var(--signal-soft); color: var(--ink); }
+
+/* Long-form lesson prose */
+.prose-lesson { max-width: 72ch; }
+.prose-lesson p { margin: 0 0 0.9em; }
+.prose-lesson strong { font-weight: 600; color: var(--ink); }
+.prose-lesson a { color: var(--cobalt-ink); text-decoration: underline; text-underline-offset: 3px; }
+.prose-lesson ul, .prose-lesson ol { padding-left: 1.4em; margin: 0 0 0.9em; }
+.prose-lesson ul { list-style: disc; }
+.prose-lesson ol { list-style: decimal; }
+.prose-lesson li { margin: 0.25em 0; }
+.prose-lesson code { font-family: var(--font-mono); font-size: 0.88em; background: var(--panel-2); padding: 0.1em 0.35em; border-radius: 4px; }
+.prose-lesson table { border-collapse: collapse; width: 100%; font-size: 0.95em; }
+.prose-lesson th, .prose-lesson td { border: 1px solid var(--line); padding: 0.45em 0.7em; text-align: left; vertical-align: top; }
+.prose-lesson th { background: var(--panel-2); font-weight: 600; }
+.katex { font-size: 1.08em; }
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.25em 0; }
+
+/* SVG figure text defaults */
+.fig svg { width: 100%; height: auto; display: block; }
+.fig svg text { font-family: var(--font-sans); fill: var(--fig-ink); }
+
+/* Instrument readout (labs) */
+.readout { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Reduced motion: stop decorative animation, keep state changes */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* =====================================================================
+   Learner UI additions (appended; tokens above unchanged)
+   ===================================================================== */
+
+/* Sidebar breakpoint: sidebar ≥ 1025 px, drawer at ≤ 1024 px */
+@theme {
+  --breakpoint-desk: 1025px;
+}
+
+html { scroll-padding-top: 76px; }
+:root { --topbar-h: 60px; }
+body { min-height: 100dvh; }
+
+/* Skip link */
+.ee-skip {
+  position: absolute; left: 0.75rem; top: -4rem; z-index: 100;
+  background: var(--ink); color: var(--paper); padding: 0.6rem 1rem; border-radius: var(--r-sm);
+  font-weight: 600; transition: top 0.15s;
+}
+.ee-skip:focus { top: 0.6rem; }
+
+/* Loading skeleton (no shimmer under reduced motion — handled globally) */
+.ee-skeleton {
+  background: linear-gradient(90deg, var(--panel-2) 0%, var(--paper-grid) 40%, var(--panel-2) 80%);
+  background-size: 300% 100%;
+  animation: ee-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes ee-shimmer { from { background-position: 100% 0; } to { background-position: -50% 0; } }
+
+/* Dialog / drawer */
+.ee-dialog[open] { animation: ee-pop 0.16s ease-out; }
+.ee-dialog::backdrop { backdrop-filter: blur(2px); }
+.ee-drawer { margin: 0; }
+.ee-drawer[open] { animation: ee-slide 0.2s ease-out; }
+@keyframes ee-pop { from { opacity: 0; transform: translateY(6px) scale(0.98); } }
+@keyframes ee-slide { from { transform: translateX(-100%); } }
+
+/* Markdown inline (inside buttons/labels) */
+.md-inline p { display: inline; margin: 0; }
+.md-inline ul, .md-inline ol { margin: 0.3em 0 0.3em 1.2em; list-style: disc; }
+.md-inline strong { font-weight: 600; color: var(--ink); }
+.md-inline code { font-family: var(--font-mono); font-size: 0.88em; background: var(--panel-2); padding: 0.05em 0.3em; border-radius: 4px; }
+.md-inline a, .prose-lesson a { overflow-wrap: anywhere; }
+.prose-lesson > :last-child { margin-bottom: 0; }
+.katex-block .katex-display { margin: 0.2em 0; }
+
+/* Callouts */
+.ee-callout-safety {
+  background: var(--signal-soft);
+  border: 0;
+  position: relative;
+  box-shadow: inset 0 0 0 2px var(--signal);
+  padding-top: 1.1rem !important;
+}
+.ee-callout-safety::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 8px; border-radius: var(--r-md) var(--r-md) 0 0;
+  background: repeating-linear-gradient(-45deg, var(--signal) 0 12px, var(--ink) 12px 24px);
+}
+.ee-callout-danger { border-width: 2px; }
+.ee-callout-danger > p:first-child { color: var(--danger); }
+.ee-callout-standard { border-left: 6px double var(--line-strong); }
+
+/* Procedure: steps joined by a copper trace */
+.ee-procedure > li:not(:last-child)::before {
+  content: ""; position: absolute; left: calc(1rem - 1px); top: 2rem; bottom: -0.75rem; width: 2px; background: var(--copper); opacity: 0.45;
+}
+
+/* Hotspot idle pulse */
+.ee-spot-idle { animation: ee-ping 2.4s ease-in-out infinite; }
+@keyframes ee-ping { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cobalt) 45%, transparent); } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--cobalt) 0%, transparent); } }
+
+/* ---------------- PCB roadmap ---------------- */
+.ee-pcb-board { fill: var(--panel); stroke: var(--line-strong); stroke-width: 2; }
+.ee-pcb-hole-ring { fill: none; stroke: var(--copper); stroke-width: 3; opacity: 0.55; }
+.ee-pcb-hole { fill: var(--paper); stroke: var(--line-strong); }
+.ee-pcb-trace { fill: none; stroke: var(--line-strong); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.ee-pcb-trace-lit { stroke: var(--copper); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--copper) 55%, transparent)); }
+.ee-pcb-via { fill: var(--panel); stroke: var(--line-strong); stroke-width: 4; }
+.ee-pcb-via-lit { stroke: var(--copper); }
+.ee-pad { cursor: pointer; outline: none; }
+.ee-pad-ring { fill: var(--panel); stroke-width: 8; transition: transform 0.15s; }
+.ee-pad-locked { stroke-dasharray: 6 6; opacity: 0.75; }
+.ee-pad-progress { fill: none; stroke-width: 5; stroke-linecap: round; opacity: 0.85; }
+.ee-pad-num { font-family: var(--font-sans); font-weight: 700; font-size: 26px; fill: var(--ink); pointer-events: none; }
+.ee-pad-num-done { fill: var(--panel); }
+.ee-pad-focus { fill: none; stroke: transparent; stroke-width: 4; }
+.ee-pad:focus-visible .ee-pad-focus { stroke: var(--cobalt); }
+.ee-pad:hover .ee-pad-ring, .ee-pad-active { stroke-width: 11; }
+.ee-pad-pulse { fill: none; stroke-width: 3; animation: ee-pad-pulse 2.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ee-pad-pulse { 0% { opacity: 0.9; transform: scale(0.92); } 100% { opacity: 0; transform: scale(1.35); } }
+
+/* Mini stage trace on the home page */
+.ee-path-line { background: repeating-linear-gradient(90deg, var(--copper) 0 18px, transparent 18px 26px); }
+
+/* ---------------- Print ---------------- */
+@media print {
+  @page { size: A4; margin: 14mm 14mm 16mm; }
+  html { font-size: 11.5pt; }
+  body { background: #fff !important; color: #000; }
+  :root, :root[data-theme="dark"] {
+    --paper: #fff; --panel: #fff; --panel-2: #f2f2f2; --ink: #000; --ink-2: #222; --ink-3: #444; --line: #999; --line-strong: #666;
+    --fig-bg: #fff; --fig-panel: #f4f4f4; --fig-ink: #000; --fig-muted: #444; --fig-grid: #ccc;
+  }
+  .shadow-1, .shadow-2 { box-shadow: none !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+  .break-inside-avoid, figure, table, .ee-callout { break-inside: avoid; }
+  .ee-sheet { max-width: none !important; border: 0 !important; padding: 0 !important; }
+  .ee-sheet h2 { break-after: avoid; }
+  .ee-answer-line { border-bottom: 1px solid #555 !important; }
+}
+
+/* ---------------- Worksheet (ใบงาน) — A4 print ---------------- */
+@media print {
+  /* app chrome */
+  .ee-topbar, .ee-sidebar, .ee-skip, [data-sonner-toaster] { display: none !important; }
+  div:has(> .ee-sidebar) { display: block !important; max-width: none !important; }
+  main#main:has(.ee-worksheet) { padding: 0 !important; }
+  main#main:has(.ee-worksheet) > div { max-width: none !important; }
+
+  .ee-worksheet { font-size: 11pt; line-height: 1.5; color: #000; background: #fff !important; border-radius: 0 !important; }
+  .ee-worksheet h1 { font-size: 15pt; }
+  .ee-worksheet h2 { font-size: 12.5pt; margin-bottom: 0.35rem; break-after: avoid; }
+  .ee-worksheet section { margin-top: 0.9rem !important; }
+  .ee-worksheet .ee-ws-keep, .ee-worksheet li { break-inside: avoid; }
+  .ee-worksheet .ee-ws-scroll { overflow: visible !important; }
+  .ee-worksheet .ee-ws-table { min-width: 0 !important; font-size: 10pt; }
+  .ee-worksheet .ee-ws-table th, .ee-worksheet .ee-ws-table td { border: 1px solid #555 !important; }
+  .ee-worksheet .ee-ws-table thead { display: table-header-group; }
+  .ee-worksheet .ee-ws-table tr { break-inside: avoid; }
+  .ee-worksheet .ee-ws-table th { background: #eee !important; }
+  .ee-worksheet .ee-ws-safety, .ee-worksheet .ee-ws-safety * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ee-worksheet .ee-ws-safety { border-color: #000 !important; background: #fff !important; }
+  .ee-worksheet .grid { display: grid !important; }
+  .ee-worksheet > div[aria-label="ข้อมูลผู้เรียน"] { grid-template-columns: 2.2fr 0.8fr 1fr 1.2fr !important; }
+  .ee-worksheet > footer { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* =====================================================================
+   Dashboard + Certificate of Completion (appended by backend engineer)
+   Scoped to .ee-bar-pre / .ee-certificate*; does not touch worksheet rules.
+   ===================================================================== */
+
+/* Dashboard quiz chart: pre-test bars are hatched so they differ from post bars without colour */
+.ee-bar-pre { background: repeating-linear-gradient(135deg, var(--ink-3) 0 2px, transparent 2px 6px); }
+
+/* Certificate: one A4 landscape page, no browser margins */
+@page ee-certificate { size: A4 landscape; margin: 0; }
+@media print {
+  body:has(.ee-certificate) { min-height: 0 !important; }
+  .ee-certificate-page { page: ee-certificate; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .ee-certificate {
+    width: 297mm; height: 209mm; aspect-ratio: auto !important; margin: 0 !important;
+    border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important;
+    font-size: 12.5pt; line-height: 1.55; color: #000;
+    break-inside: avoid; page-break-inside: avoid;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ee-certificate .ee-cert-frame { inset: 8mm !important; border-color: var(--copper) !important; }
+  .ee-certificate .ee-cert-frame-inner { inset: 11mm !important; }
+  .ee-certificate .ee-cert-hole { display: block !important; }
+  .ee-certificate .ee-cert-body { padding: 17mm 28mm 15mm !important; }
+  .ee-certificate .ee-cert-title { font-size: 30pt; }
+  .ee-certificate .ee-cert-sub { font-size: 12pt; }
+  .ee-certificate .ee-cert-name { font-size: 28pt; }
+  .ee-certificate .ee-cert-course { font-size: 16pt; }
+}

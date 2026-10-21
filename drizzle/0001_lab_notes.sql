@@ -1,0 +1,1 @@
+ALTER TABLE "lab_reflection" ADD COLUMN "notes" jsonb DEFAULT '[]'::jsonb NOT NULL;
